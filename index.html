@@ -19,7 +19,7 @@
   .C {background:#9acd32; color:#333;} .D {background:#42aaff; color:#333;} .F {background:#9b59b6;}
   .modal {position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:1000;}
   .modal-content {background:#2a2a2a; padding:25px; border-radius:12px; max-width:500px; width:90%;}
-  .save-status {text-align:center; margin:10px; font-size:14px; color:#4caf50;}
+  .save-status {text-align:center; margin:10px; font-size:14px;}
 </style>
 </head>
 <body>
@@ -50,7 +50,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzA4C-JKA5EKD3eQJ9dI8JUEm0riLAAXxWIB59xeHZ0eqATCVxTOqW0_TTiFABwt4dHGA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVBznCM48OAytOVfOJA1Ga7hsscHGD0KW-pYAjIBPivncZP9DPsofog_8cRbT4CJFGVQ/exec";
 
 const TIERS = ['S', 'A', 'B', 'C', 'D', 'F'];
 let allItems = [];
@@ -135,16 +135,15 @@ function addDragEvents() {
   });
 
   document.querySelectorAll('.item').forEach(item => {
-    item.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text', item.dataset.name);
-    });
+    item.addEventListener('dragstart', e => e.dataTransfer.setData('text', item.dataset.name));
   });
 }
 
 async function saveToSheet() {
   const status = document.getElementById('saveStatus');
+  status.style.color = "#ffeb3b";
   status.textContent = "💾 저장 중...";
-  
+
   const updates = allItems
     .filter(item => TIERS.includes(item.tier))
     .map(item => ({name: item.name, tier: item.tier}));
@@ -153,13 +152,15 @@ async function saveToSheet() {
     await fetch(SCRIPT_URL, {
       method: 'POST',
       body: JSON.stringify({updates}),
-      headers: {'Content-Type': 'application/json'}
+      headers: { 'Content-Type': 'application/json' }
     });
-    status.textContent = "✅ 시트에 자동 저장 완료";
-    setTimeout(() => status.textContent = "", 2500);
+    status.style.color = "#4caf50";
+    status.textContent = "✅ 시트에 저장 완료";
+    setTimeout(() => status.textContent = "", 2000);
   } catch(e) {
-    status.textContent = "❌ 저장 실패 (인터넷 확인)";
     console.error(e);
+    status.style.color = "#f44336";
+    status.textContent = "❌ 저장 실패 (인터넷 또는 Script 확인)";
   }
 }
 
