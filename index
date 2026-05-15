@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>마을 티어리스트</title>
+<style>
+  body {
+    font-family: 'Malgun Gothic', sans-serif;
+    background: #1a1a1a;
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 { text-align: center; margin-bottom: 10px; }
+  .refresh { text-align: center; margin-bottom: 20px; font-size: 14px; color: #aaa; }
+
+  .tier-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .tier-row {
+    display: flex;
+    min-height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tier-label {
+    width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+  }
+  .tier-items {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    background: #2a2a2a;
+    min-height: 80px;
+  }
+  .item {
+    background: #3a3a3a;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: all 0.2s;
+  }
+  .item:hover { transform: scale(1.05); background: #555; }
+
+  .S { background: #ff4d4d; }   /* 빨강 */
+  .A { background: #ff8c42; }   /* 주황 */
+  .B { background: #ffd633; }   /* 노랑 */
+  .C { background: #9acd32; }   /* 연두 */
+  .D { background: #42aaff; }   /* 파랑 */
+  .F { background: #9b59b6; }   /* 보라 */
+
+  .unassigned {
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🏘️ 마을 티어리스트</h1>
+<div class="refresh">매 8초마다 자동 새로고침됩니다 • 드래그해서 이동하세요</div>
+
+<div class="tier-container" id="tiers"></div>
+
+<script>
+// ================== 설정 ==================
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR0GrINy2HAmOQXlj0X_02i69TqWIBbg-SkC4jbS_bf85pTXN6jQ3Vr-G42Tqj8aDxexIpHuHvQswWB/pub?gid=1999547755&single=true&output=csv";
+const TIERS = ['S', 'A', 'B', 'C', 'D', 'F'];
+const REFRESH_SECONDS = 8;
+
+// ================== 메인 ==================
+let allItems = [];
+
+async function loadData() {
+  try {
+    const res = await fetch(CSV_URL);
+    const text = await res.text();
+    const rows = text.split('\n').map(row => row.split(',').map(cell => cell.trim()));
+    
+    // B열(마을이름) 추출 - 첫 번째 행은 헤더
+    allItems = rows.slice(1)
+      .filter(row => row.length > 1 && row[1] !== "")
+      .map(row => ({
+        name: row[1],           // B열 = 마을이름
+        tier: 'unassigned'
+      }));
+
+    renderTiers();
+  } catch(e) {
+    console.error(e);
+    alert("데이터를 불러오지 못했습니다. 구글 시트 링크가 공개되어 있는지 확인해주세요.");
+  }
+}
+
+function renderTiers() {
+  const container = document.getElementById('tiers');
+  container.innerHTML = '';
+
+  TIERS.forEach(tier => {
+    const tierItems = allItems.filter(item => item.tier === tier);
+
+    const row = document.createElement('div');
+    row.className = 'tier-row';
+    row.innerHTML = `
+      <div class="tier-label ${tier}">${tier}</div>
+      <div class="tier-items" data-tier="${tier}"></div>
+    `;
+
+    const itemsDiv = row.querySelector('.tier-items');
+    tierItems.forEach(item => {
+      const el = createItemElement(item);
+      itemsDiv.appendChild(el);
+    });
+
+    container.appendChild(row);
+  });
+
+  // 미배정 구역
+  const unassigned = allItems.filter(item => item.tier === 'unassigned');
+  if (unassigned.length > 0) {
+    const unRow = document.createElement('div');
+    unRow.className = 'tier-row unassigned';
+    unRow.innerHTML = `
+      <div class="tier-label" style="background:#555;">미배정</div>
+      <div class="tier-items" data-tier="unassigned"></div>
+    `;
+    const itemsDiv = unRow.querySelector('.tier-items');
+    unassigned.forEach(item => itemsDiv.appendChild(createItemElement(item)));
+    container.appendChild(unRow);
+  }
+
+  addDragEvents();
+}
+
+function createItemElement(item) {
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.draggable = true;
+  div.textContent = item.name;
+  div.dataset.name = item.name;
+  return div;
+}
+
+function addDragEvents() {
+  document.querySelectorAll('.tier-items').forEach(zone => {
+    zone.addEventListener('dragover', e => e.preventDefault());
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      const name = e.dataTransfer.getData('text');
+      const targetTier = zone.dataset.tier;
+      
+      const item = allItems.find(i => i.name === name);
+      if (item) item.tier = targetTier;
+      renderTiers();
+    });
+  });
+
+  document.querySelectorAll('.item').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text', item.dataset.name);
+    });
+  });
+}
+
+// 자동 새로고침
+setInterval(() => {
+  loadData();
+}, REFRESH_SECONDS * 1000);
+
+// 최초 로드
+loadData();
+</script>
+
+</body>
+</html>
