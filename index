@@ -16,7 +16,6 @@
   .tier-items {flex:1; display:flex; flex-wrap:wrap; gap:12px; padding:12px; background:#2a2a2a; min-height:85px;}
   
   .item {
-    background:#3a3a3a; 
     padding:14px 20px; 
     border-radius:10px; 
     cursor:grab; 
@@ -24,17 +23,33 @@
     box-shadow:0 3px 8px rgba(0,0,0,0.4); 
     transition:all 0.2s; 
     font-size:16px;
-    border-left: 6px solid #666;
+    font-weight: 500;
+    min-width: 110px;
+    text-align: center;
   }
-  .item:hover {transform:scale(1.06); background:#555;}
+  .item:hover {transform:scale(1.05); filter: brightness(1.1);}
 
-  /* 담당자(드라이버)별 색상 */
-  .driver-우정현 { border-left-color: #4caf50; }   /* 초록 */
-  .driver-양태주 { border-left-color: #ffeb3b; }   /* 노랑 */
-  .driver-이진수 { border-left-color: #42aaff; }   /* 파랑 */
+  /* === 담당 매니저별 카드 전체 색상 === */
+  .driver-우정현 { 
+    background: #2e7d32; 
+    color: white; 
+  }
+  .driver-양태주 { 
+    background: #f9a825; 
+    color: #222; 
+  }
+  .driver-이진수 { 
+    background: #1976d2; 
+    color: white; 
+  }
 
-  .S {background:#ff4d4d;} .A {background:#ff8c42;} .B {background:#ffd633; color:#333;}
-  .C {background:#9acd32; color:#333;} .D {background:#42aaff; color:#333;} .F {background:#9b59b6;}
+  /* 티어 라벨 색상 */
+  .S {background:#ff4d4d;} 
+  .A {background:#ff8c42;} 
+  .B {background:#ffd633; color:#333;} 
+  .C {background:#9acd32; color:#333;} 
+  .D {background:#42aaff; color:#333;} 
+  .F {background:#9b59b6;}
 
   .modal {position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:1000;}
   .modal-content {background:#2a2a2a; padding:25px; border-radius:12px; max-width:500px; width:90%;}
