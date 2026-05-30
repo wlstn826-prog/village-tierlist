@@ -24,26 +24,16 @@
     transition:all 0.2s; 
     font-size:16px;
     font-weight: 500;
-    min-width: 110px;
+    min-width: 130px;
     text-align: center;
   }
-  .item:hover {transform:scale(1.05); filter: brightness(1.1);}
+  .item:hover {transform:scale(1.06); filter: brightness(1.08);}
 
-  /* === 담당 매니저별 카드 전체 색상 === */
-  .driver-우정현 { 
-    background: #2e7d32; 
-    color: white; 
-  }
-  .driver-양태주 { 
-    background: #f9a825; 
-    color: #222; 
-  }
-  .driver-이진수 { 
-    background: #1976d2; 
-    color: white; 
-  }
+  /* 매니저별 색상 (강하게 적용) */
+  .driver-우정현 { background: #2e7d32 !important; color: white; }
+  .driver-양태주 { background: #f9a825 !important; color: #222; }
+  .driver-이진수 { background: #1976d2 !important; color: white; }
 
-  /* 티어 라벨 색상 */
   .S {background:#ff4d4d;} 
   .A {background:#ff8c42;} 
   .B {background:#ffd633; color:#333;} 
@@ -94,16 +84,19 @@ async function loadData() {
   try {
     const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
     const json = await res.json();
+    
     allItems = json.map(item => ({
       name: item.name,
       tier: item.tier || 'unassigned',
       reason: item.reason || '',
       day: item.day || '',
       time: item.time || '',
-      driver: item.driver || ''
+      driver: (item.driver || '').trim().replace(/\s+/g, '')  // 띄어쓰기 완전 제거
     }));
     renderTiers();
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error(e); 
+  }
 }
 
 function renderTiers() {
